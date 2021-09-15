@@ -1,7 +1,7 @@
 doctype html
 style.
     input[type=text], select {
-    width: 100%;
+    width: 10%;
     padding: 12px 20px;
     margin: 8px 0;
     display: inline-block;
@@ -27,12 +27,16 @@ style.
     background-color: #f2f2f2;
     padding: 20px;
     }
-h3 Choose Your Skill
+
+script.
+    var showTableData = function(item) {
+        alert("Table Name" + item.name);
+    }
+
+h2 Tables in the database:
 div
-    #{row}
-    //form(action='/SkillOpted' method="post")
-        label(for='skillOpt') Skills 
-        select(name='dropDown', id='')
-            each skill in Skills
-                option=skill
-            input(type='submit', value='Submit')
+    select(id="table_names")
+        each item in data
+            option(value=item.name, onclick='showTableData('+ item.name +')') #{item.name}
+
+
