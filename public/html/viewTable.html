@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Table Data</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="jquery.min.js" crossorigin="anonymous"></script>
+  <script src="popper.min.js" crossorigin="anonymous"></script>
+  <script src="bootstrap.min.js" crossorigin="anonymous"></script>
+  <script src="jquery.min.js"></script>
+
+  <script>
+    $(document).ready(() => {
+      $.ajax({
+        url: `http://localhost:3000/db/json`,
+        method: 'GET',
+        success: function (response) {
+          var cols = '';
+          if (response.length > 0) {
+            for (let index = 0; index < response.length; index++) {
+              $('#tableSelect').append($('<option>',
+                {
+                    value: 'option_'+index,
+                    text : response[index].name
+                }));
+            }
+          }
+        }
+      })
+
+      $('#tableSelect').on('change', function(e) {
+          $("#tableData .tbody").empty();
+                    var tableName = $( "#tableSelect option:selected" ).text();
+                    console.log('option selected: ' + tableName);
+                    if (tableName) {
+                      $.ajax({
+                            url: `http://localhost:3000/db/table/${tableName}`,
+                            method: 'GET',
+                            success: function (response) {
+                              if (response.length > 0) {
+                                for (let index = 0; index < response.length; index++) {
+                                  var newRow = $("<tr>");
+                                  var cols = "";
+                                  var id = '';
+                                  var name = '';
+                                  var availabity = '';
+                                  var author = '';
+                                  var price = '';
+
+                                  cols += '<td> ' + response[index].id + '</td>';
+                                  cols += '<td> ' + response[index].name + '</td>';
+                                  cols += '<td> ' + response[index].availabity + '</td>';
+                                  cols += '<td> ' + response[index].author + '</td>';
+                                  cols += '<td> ' + response[index].price + '</td>';
+
+                                  newRow.append(cols);
+                                  $("#tableData .tbody").append(newRow);
+                                }
+                              }
+                            }
+                  })
+                    }
+                });
+    })
+  </script>
+</head>
+
+<body>
+  <div class="container container-sm">
+    <select id="tableSelect" class="form-select" aria-label="Default select example">
+      <option class="opt"></option>
+    </select>
+    <br/><br/>
+    <table id="tableData" class="table table-fixed">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Availability</th>
+          <th>Author</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody class="tbody">
+      </tbody>
+    </table>
+  </div>
+</body>
+
+</html>
