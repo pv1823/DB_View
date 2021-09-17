@@ -7,8 +7,12 @@ a {
   color: #00B7FF;
 }
 
+.logo-icon {
+  max-width: 2rem;
+  margin-right: 1rem;
+}
 .nav-block {
-  color:beige;
+  color:white;
 }
 
 .main-section {
