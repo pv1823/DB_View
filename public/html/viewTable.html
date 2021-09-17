@@ -8,8 +8,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="bootstrap.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css" crossorigin="anonymous">
   <!-- Optional JavaScript -->
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
   <script src="jquery.min.js" crossorigin="anonymous"></script>
@@ -19,6 +19,27 @@
 
   <script>
     $(document).ready(() => {
+      $('#divSelect').hide();
+      $('#divCreate').hide();
+
+      $("#queryTable").click(function() {
+        $('#divCreate').hide();
+        $('#divSelect').show();
+      });
+
+      $("#createTable").click(function() {
+        $('#divSelect').hide();
+        $('#divCreate').show();
+      });
+
+      $("#executeQuery").click(function(e) {
+        e.preventDefault();
+        var createTableElem = $("#createTable");
+        console.log(createTableElem.text());
+        //alert(createTableElem.text());
+      });
+
+
       $.ajax({
         url: `http://localhost:3000/db/json`,
         method: 'GET',
@@ -36,8 +57,46 @@
         }
       })
 
+      $("#tableData").on('click','.tdClass',function(){
+        var currentRow=$(this).closest("td");
+        var rowId =$(this).closest("tr").find('td:first').text().trim();
+        var column = currentRow.attr('id');
+        var value=currentRow.html();
+        var tableName = $( "#tableSelect option:selected" ).text();
+        console.log("Table Name: " + tableName);
+
+        var me = currentRow
+        me.hide();
+        me.after('<input id="tmpInput">');
+        $("#tmpInput").focus();
+        $("#tmpInput").bind("keyup", function(e) {
+            e.preventDefault();
+            if (e.keyCode == '13') {
+                var newValue = $(this).val();
+                $(this).remove();
+                if(me.is("input")) {
+                    me.val(newValue);
+                } else {
+                    me.text(newValue);
+                }
+                me.show();
+
+                var url = `http://localhost:3000/db/table/update/${tableName}/${column}/${rowId}`;
+                console.log("URL: " + url);
+                
+
+                $.post(url, {"newValue": newValue}, function (response) {
+                        console.log("Updated successfully !")
+                    }
+                ); 
+            }
+            return false;
+        });
+
+      });
+
       $('#tableSelect').on('change', function(e) {
-          $("#tableData .tbody").empty();
+          $("#tableData .thead-light").empty();
                     var tableName = $( "#tableSelect option:selected" ).text();
                     console.log('option selected: ' + tableName);
                     if (tableName) {
@@ -55,43 +114,80 @@
                                   var author = '';
                                   var price = '';
 
-                                  cols += '<td> ' + response[index].id + '</td>';
-                                  cols += '<td> ' + response[index].name + '</td>';
-                                  cols += '<td> ' + response[index].availabity + '</td>';
-                                  cols += '<td> ' + response[index].author + '</td>';
-                                  cols += '<td> ' + response[index].price + '</td>';
+                                  cols += '<td class="tdClass" > ' + response[index].id + '</td>';
+                                  cols += '<td class="tdClass" id="name"> ' + response[index].name + '</td>';
+                                  cols += '<td class="tdClass" id="availabity"> ' + response[index].availabity + '</td>';
+                                  cols += '<td class="tdClass" id="author"> ' + response[index].author + '</td>';
+                                  cols += '<td class="tdClass" id="price"> ' + response[index].price + '</td>';
 
                                   newRow.append(cols);
-                                  $("#tableData .tbody").append(newRow);
+                                  $("#tableData .thead-light").append(newRow);
                                 }
                               }
                             }
-                  })
-                    }
+                          })
+
+                      }
+
+
                 });
-    })
+
+    });
+
+
   </script>
 </head>
 
 <body>
-  <div class="container container-sm">
-    <select id="tableSelect" class="form-select" aria-label="Default select example">
-      <option class="opt"></option>
-    </select>
-    <br/><br/>
-    <table id="tableData" class="table table-fixed">
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Name</th>
-          <th>Availability</th>
-          <th>Author</th>
-          <th>Price</th>
-        </tr>
-      </thead>
-      <tbody class="tbody">
-      </tbody>
-    </table>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top nav-block">
+    <h1>DB View</h1>
+  </nav>
+  <div class="container container-sm main-section">
+    <h3>What would you like to do ? </h3><hr/>
+    <div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="tableOptions" id="queryTable" value="queryTable">
+        <label class="form-check-label" for="queryTable">Query table</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="tableOptions" id="createTable" value="createTable">
+        <label class="form-check-label" for="createTable">Create table</label>
+      </div>
+    </div>
+    
+    <div id="divSelect" class="div-select">
+      Show data for table  
+      <select id="tableSelect" class="form-select" aria-label="Default select example">
+        <option class="opt"></option>
+      </select> <hr/>
+      <br/><br/>
+      <table id="tableData" class="table table-fixed">
+        <thead class="thead-dark">
+          <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Availability</th>
+            <th>Author</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody class="thead-light">
+        </tbody>
+      </table>
+    </div>
+
+    <div id="divCreate" class="div-create query-execute">
+      <div class="row">
+        <div class="col-lg">
+          <textarea name="createTable" id="createTable" cols="30" rows="10"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <button 
+          id="executeQuery" 
+          class="btn btn-success execute-btn">Execute</button>
+      </div>
+    </div>
   </div>
 </body>
 
