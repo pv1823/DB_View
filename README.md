@@ -30,7 +30,7 @@ The application itself can be invoked with `npm start`.
 
 *Instructions and examples for use:*
 
-![Gif demo of README-generator](readme-demo.gif)
+![Gif demo of DBView Application](public/images/DB_View.png)
 
 When you run `npm start`, the application uses the `express` package to start up the web application. 
 
