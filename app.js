@@ -24,6 +24,7 @@ app.use(express.static(path.join(__dirname, 'public/html')));
 app.use(express.static(path.join(__dirname, 'public/js')));
 app.use(express.static(path.join(__dirname, 'public/css')));
 app.use(express.static(path.join(__dirname, 'public/stylesheets')));
+app.use(express.static(path.join(__dirname, 'public/images')));
 
 
 app.use('/', indexRouter);

@@ -21,6 +21,8 @@
     $(document).ready(() => {
       $('#divSelect').hide();
       $('#divCreate').hide();
+      $('#alertError').hide();
+      $('#alertSuccess').hide();
 
       $("#queryTable").click(function() {
         $('#divCreate').hide();
@@ -38,6 +40,32 @@
         console.log(createTableElem.text());
         //alert(createTableElem.text());
       });
+
+      $("#tableData").on('click','.rowDelete',function(){
+        var currentRow=$(this).closest("td");
+        var row = $(this).closest("tr");
+        var rowId =$(this).closest("tr").find('td:first').text().trim();
+        var column = currentRow.attr('id');
+        var value=currentRow.html();
+        var tableName = $( "#tableSelect option:selected" ).text();
+        var urlDelete = `http://localhost:3000/db/table/delete/${tableName}/${rowId}`;
+        console.log("rowDelete - "+ urlDelete);
+
+        $.ajax({
+        url: urlDelete,
+        method: 'DELETE',
+        success: function (response) {
+          $('#alertSuccessMsg').text('<strong>SUCCESS: </strong> Row deleted successfully from the table. ');
+          $('alertError').show();
+        },
+        error: function(err) {
+          $('#alertErrorMsg').text('<strong>ERROR: </strong> Failed to delete row from the table. ');
+          $('alertError').show();
+        }
+      });
+
+      row.remove();
+    });
 
 
       $.ajax({
@@ -63,11 +91,11 @@
         var column = currentRow.attr('id');
         var value=currentRow.html();
         var tableName = $( "#tableSelect option:selected" ).text();
-        console.log("Table Name: " + tableName);
+        //console.log("Table Name: " + tableName);
 
         var me = currentRow
         me.hide();
-        me.after('<input id="tmpInput">');
+        me.after(`<input id="tmpInput" style="padding: 0.5rem;" value="${value}">`);
         $("#tmpInput").focus();
         $("#tmpInput").bind("keyup", function(e) {
             e.preventDefault();
@@ -93,6 +121,14 @@
             return false;
         });
 
+        $("#tmpInput").blur(function(){
+          var newValue = $(this).val();
+          if (newValue.length == 0) {
+            $(this).remove();
+            me.show();
+          }
+        });
+
       });
 
       $('#tableSelect').on('change', function(e) {
@@ -106,32 +142,27 @@
                             success: function (response) {
                               if (response.length > 0) {
                                 for (let index = 0; index < response.length; index++) {
-                                  var newRow = $("<tr>");
-                                  var cols = "";
-                                  var id = '';
-                                  var name = '';
-                                  var availabity = '';
-                                  var author = '';
-                                  var price = '';
+                                  try {
+                                    var newRow = $("<tr>");
+                                    var cols = "";
+                                    cols += '<td class="tdClass" > ' + response[index].id + '</td>';
+                                    cols += '<td class="tdClass" id="name"> ' + response[index].name + '</td>';
+                                    cols += '<td class="tdClass" id="availabity"> ' + response[index].availabity + '</td>';
+                                    cols += '<td class="tdClass" id="author"> ' + response[index].author + '</td>';
+                                    cols += '<td class="tdClass" id="price"> ' + response[index].price + '</td>';
+                                    cols += '<td class="rowDelete"><img src="trash.svg" /></td>';
 
-                                  cols += '<td class="tdClass" > ' + response[index].id + '</td>';
-                                  cols += '<td class="tdClass" id="name"> ' + response[index].name + '</td>';
-                                  cols += '<td class="tdClass" id="availabity"> ' + response[index].availabity + '</td>';
-                                  cols += '<td class="tdClass" id="author"> ' + response[index].author + '</td>';
-                                  cols += '<td class="tdClass" id="price"> ' + response[index].price + '</td>';
-
-                                  newRow.append(cols);
-                                  $("#tableData .thead-light").append(newRow);
+                                    newRow.append(cols);
+                                    $("#tableData .thead-light").append(newRow);
+                                  } catch(err) {
+                                    console.error('ERROR: ', err);
+                                  }
                                 }
                               }
                             }
                           })
-
                       }
-
-
                 });
-
     });
 
 
@@ -161,7 +192,13 @@
         <option class="opt"></option>
       </select> <hr/>
       <br/><br/>
-      <table id="tableData" class="table table-fixed">
+      <table  id="tableData" 
+              data-toggle="table"
+              data-search="true"
+              data-filter-control="true" 
+              data-show-export="true"
+			        data-click-to-select="true"
+			        data-toolbar="#toolbar"class="table table-fixed">
         <thead class="thead-dark">
           <tr>
             <th>Id</th>
@@ -169,12 +206,32 @@
             <th>Availability</th>
             <th>Author</th>
             <th>Price</th>
+            <th>Operations</th>
           </tr>
         </thead>
         <tbody class="thead-light">
         </tbody>
       </table>
     </div>
+
+    <div>
+    <div>
+      <div id="alertError" class="alert alert-warning alert-dismissible fade show" role="alert">
+        <p id="alertErrorMsg"><strong>ERROR</strong> Row deleted successfully. </p>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+    <div>
+      <div id="alertSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+        <p id="alertSuccessMsg"><strong>SUCCESS</strong> Row deleted successfully. </p>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
     <div id="divCreate" class="div-create query-execute">
       <div class="row">

@@ -32,3 +32,20 @@ a {
 .execute-btn {
   margin-top: 2rem;
 }
+
+#alertSuccess {
+  margin-top: 1rem;
+}
+
+#alertError {
+  margin: 2rem;
+  min-width: 3rem;
+}
+
+#alertSuccessMsg {
+  margin-top: 0.5rem;
+}
+
+.rowDelete:hover {
+  cursor: pointer;
+}

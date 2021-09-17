@@ -81,4 +81,27 @@ router.post("/table/create", function (req, res, next) {
   }
 });
 
+/* delete rows in the table. */
+router.delete("/table/delete/:tableName/:id", function (req, res, next) {
+  var id = req.params.id;
+  var tableName = req.params.tableName;
+  var sqlQuery = `DELETE FROM ${tableName} WHERE id=${id}`;
+  var data = [];
+  console.log("Query: " + sqlQuery);
+  
+  try {
+    db.run(sqlQuery, data, (err) => {
+      if (err) {
+        console.error(err.message);
+        res.send({'status': 'FAILURE', 'message': 'Row Deletion failed.'})
+      } else {
+        var msg = `Deleted row with id ${id} successfully`;
+        res.send({'status': 'SUCCESS', 'message': msg})
+      }
+    });
+  } catch (err) {
+    console.error('ERROR: Unable to update table. Check console log');
+  }
+});
+
 module.exports = router;
