@@ -52,10 +52,8 @@ MIT License
 
 ## Questions?
 
-![Developer Profile Picture](https://avatars3.githubusercontent.com/u/61371242?v=5) 
-
 Feel free to contact me with examples or any questions via the information below:
 
-GitHub: [@connietran-dev](https://api.github.com/users/pv1823)
+GitHub: [@pv1823](https://api.github.com/users/pv1823)
 
 Email: pv1823@gmail.com
