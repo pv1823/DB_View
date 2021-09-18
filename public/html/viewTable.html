@@ -123,7 +123,7 @@
 
         $("#tmpInput").blur(function(){
           var newValue = $(this).val();
-          if (newValue.length == 0) {
+          if (newValue.length == 0 || newValue == value) {
             $(this).remove();
             me.show();
           }
