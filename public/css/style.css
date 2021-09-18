@@ -53,3 +53,7 @@ a {
 .rowDelete:hover {
   cursor: pointer;
 }
+
+.db-table {
+  background-color: rgb(241, 241, 241);
+}
