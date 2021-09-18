@@ -54,6 +54,15 @@ a {
   cursor: pointer;
 }
 
+.rowNew {
+  cursor: pointer;
+  display: inline-flex;
+}
+
+#btnAddRow {
+  margin-left: 0.5rem;
+  margin-top: 0.1rem;
+}
 .db-table {
   background-color: rgb(241, 241, 241);
 }

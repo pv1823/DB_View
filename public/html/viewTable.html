@@ -40,6 +40,46 @@
         console.log(createTableElem.text());
         //alert(createTableElem.text());
       });
+      
+
+
+      $('#btnAddRow .btnNewRow').on('click', function(){
+        /*
+        var newId = $("#newId").text();
+        var newName = $("#newName").text();
+        var newAvail = $("#newAvail").text();
+        var newAuthor = $("#newAuthor").text();
+        var newPrice = $("#newPrice").text();
+
+        var msg = `Write logic to add new row: ${newId}, ${newName}, ${newAvail}, ${newAuthor}, ${newPrice}`;
+        console.log(msg);
+        $('alertError').show();
+        $('#alertErrorMsg').text(`<strong>ERROR: </strong> ${msg}`);
+        */
+       console.log('btnAddRow clicked.');
+      });
+
+      $('#removeRow').click(function(){
+        $("#tableData tr:last").remove();
+      });
+
+      $('#addRow').click(function(){
+        try {
+          var newRow = $("<tr>");
+          var cols = "";
+          cols += '<td class="tdNewRow" ><input id="newId" type="text" class="form-control" placeholder="Enter Next ID" aria-label="Id" aria-describedby="basic-addon1"></td>';
+          cols += '<td class="tdNewRow" id="name"><input  id="newName" type="text" class="form-control" placeholder="Enter Name" aria-label="Name" aria-describedby="basic-addon1"></td>';
+          cols += '<td class="tdNewRow" id="availabity"><input  id="newAvail" type="text" class="form-control" placeholder="Avaliable?" aria-label="Availability" aria-describedby="basic-addon1"></td>';
+          cols += '<td class="tdNewRow" id="author"><input  id="newAuthor" type="text" class="form-control" placeholder="Author" aria-label="Author" aria-describedby="basic-addon1"></td>';
+          cols += '<td class="tdNewRow" id="price"><input  id="newPrice" type="text" class="form-control" placeholder="Price" aria-label="Price" aria-describedby="basic-addon1"></td>';
+          cols += '<td class="rowNew"> <img id="removeRow" class="rowDelete" src="trash.svg" /> <button id="btnAddRow" class="btn btn-primary btn-sm btnNewRow">Add Row</button></td>';
+
+          newRow.append(cols);
+          $("#tableData .thead-light").append(newRow);
+        } catch(err) {
+          console.error('ERROR: ', err);
+        }
+      });
 
       $("#tableData").on('click','.rowDelete',function(){
         var currentRow=$(this).closest("td");
@@ -213,6 +253,13 @@
         <tbody class="thead-light">
         </tbody>
       </table>
+      <button id="addRow" type="button" class="btn btn-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
+        class="bi bi-plus" 
+        viewBox="0 0 16 16">  
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"></path>
+        </svg>
+      </button>
     </div>
 
     <div>
