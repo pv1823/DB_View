@@ -2,14 +2,15 @@ var express = require("express");
 var router = express.Router();
 var db = require("../repo/db");
 var path = require('path');
-/* GET home page. */
-router.get("/", function (req, res, next) {
 
-  db.all("SELECT name FROM sqlite_schema WHERE type = 'table' or type = 'view'", (err, row) => {
-    res.render('db_view', { data: row });
-  });
+var Sequelize = require('sequelize');
+var sequelize = new Sequelize(null, null, '', {
+  host: 'localhost',
+  dialect: 'sqlite',
+  // SQLite database path
+  storage: 'db_view.sqlite'
 });
-
+/* GET home page. */
 router.get("/json", function (req, res, next) {
 
   db.all("SELECT name FROM sqlite_schema WHERE type = 'table' or type = 'view'", (err, row) => {
@@ -18,21 +19,19 @@ router.get("/json", function (req, res, next) {
 });
 
 /* GET particular table. */
-router.get("/table/:tableName", function (req, res, next) {
+router.get("/table/:tableName/colNames", async function (req, res, next) {
   var tableName = req.params.tableName;
+  var tableData, tableCol;
   try {
-    db.all(`SELECT * FROM ${tableName} `, (err, row) => {
-      if (err) {
-        console.error('ERROR: Invalid table name received.');
-        res.send({ 'status': 'FAILURE', 'message': 'Check the table name' });
-      }
-      else {
-        res.send(row);
-      }
-    });
-  } catch (err) {
-    console.error('ERROR: Invalid table name received.');
-  }
+    tableData = await sequelize.query(`SELECT * FROM ${tableName}`);
+    tableCol = await sequelize.query(`SELECT name FROM pragma_table_info('${tableName}')`);
+  } catch(err) { console.error(err); }
+
+  res.json({
+    "table_name": tableName,
+    "table_data":tableData, 
+    "table_columns": tableCol
+  });
 });
 
 /* update table. */
@@ -58,6 +57,34 @@ router.post("/table/update/:tableName/:field/:id", function (req, res, next) {
   } catch (err) {
     console.error('ERROR: Unable to update table. Check console log');
   }
+});
+
+/* Add a new row. */
+router.post("/table/:tableName", function (req, res, next) {
+  var tableName = req.params.tableName;
+  var newRowData = req.body;
+  Object.keys(newRowData).forEach( (key, index)=>{
+    console.log(`${key} - ${key[index]}`);
+  });
+  /*
+  var sqlQuery = `INSERT INTO ${tableName} VALUES (${id},${name}, ${availability}, ${author}, ${price});`;
+  var data = [];
+  console.log("Query: " + sqlQuery);
+  
+  try {
+    db.run(sqlQuery, data, (err) => {
+      if (err) {
+        console.error(err.message);
+        res.send({'status': 'FAILURE', 'message': 'Row addition failed'})
+      } else {
+        var msg = `Added the row successfully`;
+        res.send({'status': 'SUCCESS', 'message': msg})
+      }
+    });
+  } catch (err) {
+    console.error('ERROR: Unable to update table. Check console log');
+  }
+  */
 });
 
 /* create table. */
@@ -103,5 +130,10 @@ router.delete("/table/delete/:tableName/:id", function (req, res, next) {
     console.error('ERROR: Unable to update table. Check console log');
   }
 });
+
+/*Getting the column names dynamically 
+router.get("/table/:tableName/colNames", function (req, res) {
+  var tableName = req.params.tableName;
+});*/
 
 module.exports = router;

@@ -43,21 +43,20 @@
       
 
 
-      $('#btnAddRow .btnNewRow').on('click', function(){
-        /*
-        var newId = $("#newId").text();
-        var newName = $("#newName").text();
-        var newAvail = $("#newAvail").text();
-        var newAuthor = $("#newAuthor").text();
-        var newPrice = $("#newPrice").text();
+      $('#btnAddRow .btnNewRow').click( function(e){
+        e.preventDefault();
+        var tableName = $("#tableSelect option:selected").text();
+        var tableContext = sessionStorage.getItem(tableName);
 
-        var msg = `Write logic to add new row: ${newId}, ${newName}, ${newAvail}, ${newAuthor}, ${newPrice}`;
+        var urlAddRow = `http://localhost:3000/db/table/${tableName}`
         console.log(msg);
         $('alertError').show();
         $('#alertErrorMsg').text(`<strong>ERROR: </strong> ${msg}`);
-        */
        console.log('btnAddRow clicked.');
-      });
+       $.post(urlAddRow, function() {
+         console.log('Row updated successfully!');
+       })
+    });
 
       $('#removeRow').click(function(){
         $("#tableData tr:last").remove();
@@ -65,16 +64,12 @@
 
       $('#addRow').click(function(){
         try {
-          var newRow = $("<tr>");
-          var cols = "";
-          cols += '<td class="tdNewRow" ><input id="newId" type="text" class="form-control" placeholder="Enter Next ID" aria-label="Id" aria-describedby="basic-addon1"></td>';
-          cols += '<td class="tdNewRow" id="name"><input  id="newName" type="text" class="form-control" placeholder="Enter Name" aria-label="Name" aria-describedby="basic-addon1"></td>';
-          cols += '<td class="tdNewRow" id="availabity"><input  id="newAvail" type="text" class="form-control" placeholder="Avaliable?" aria-label="Availability" aria-describedby="basic-addon1"></td>';
-          cols += '<td class="tdNewRow" id="author"><input  id="newAuthor" type="text" class="form-control" placeholder="Author" aria-label="Author" aria-describedby="basic-addon1"></td>';
-          cols += '<td class="tdNewRow" id="price"><input  id="newPrice" type="text" class="form-control" placeholder="Price" aria-label="Price" aria-describedby="basic-addon1"></td>';
-          cols += '<td class="rowNew"> <img id="removeRow" class="rowDelete" src="trash.svg" /> <button id="btnAddRow" class="btn btn-primary btn-sm btnNewRow">Add Row</button></td>';
+          var tableName = $("#tableSelect option:selected").text();
+          var tableContext = sessionStorage.getItem(tableName);
+          var newRow = $("<tr></tr>");
+          //var cols = "";
 
-          newRow.append(cols);
+          //newRow.append(cols);
           $("#tableData .thead-light").append(newRow);
         } catch(err) {
           console.error('ERROR: ', err);
@@ -172,36 +167,46 @@
       });
 
       $('#tableSelect').on('change', function(e) {
-          $("#tableData .thead-light").empty();
-                    var tableName = $( "#tableSelect option:selected" ).text();
-                    console.log('option selected: ' + tableName);
-                    if (tableName) {
-                      $.ajax({
-                            url: `http://localhost:3000/db/table/${tableName}`,
-                            method: 'GET',
-                            success: function (response) {
-                              if (response.length > 0) {
-                                for (let index = 0; index < response.length; index++) {
-                                  try {
-                                    var newRow = $("<tr>");
-                                    var cols = "";
-                                    cols += '<td class="tdClass" > ' + response[index].id + '</td>';
-                                    cols += '<td class="tdClass" id="name"> ' + response[index].name + '</td>';
-                                    cols += '<td class="tdClass" id="availabity"> ' + response[index].availabity + '</td>';
-                                    cols += '<td class="tdClass" id="author"> ' + response[index].author + '</td>';
-                                    cols += '<td class="tdClass" id="price"> ' + response[index].price + '</td>';
-                                    cols += '<td class="rowDelete"><img src="trash.svg" /></td>';
+      $("#tableData .thead-light").empty();
+      var tableName = $( "#tableSelect option:selected" ).text();
+      //console.log('option selected: ' + tableName);
+      if (tableName) {
+        $.ajax({
+              url: `http://localhost:3000/db/table/${tableName}/colNames`,
+              method: 'GET',
+              success: function (response) {
+                //console.log(response);
+                var col='<tr>', newRow = '<tr>';
+                if (response) {
+                  // Prepare data for Table headers.
+                  response?.table_columns[0]?.forEach((key, index)=> {
+                    var columnHeader = key['name'].charAt(0).toUpperCase()
+                      + key['name'].slice(1);
+                    col+= '<th>' +  columnHeader  + '</th>';
+                    //console.log(col);
+                  });
+                  // Append to the table headers.
+                  col += '<th>Operations</th></tr>';
+                  $("#colNames").empty();
+                  $("#colNames").append(col);
 
-                                    newRow.append(cols);
-                                    $("#tableData .thead-light").append(newRow);
-                                  } catch(err) {
-                                    console.error('ERROR: ', err);
-                                  }
-                                }
-                              }
-                            }
-                          })
-                      }
+                  // Prepare table data.
+                  response?.table_data[0]?.forEach((key, outerIndex)=> {
+                    Object.keys(key).forEach( (innerKey, index)=>{
+                      newRow += `<td class="tdClass" id="${innerKey}">${key[innerKey]}</td>`;
+                    });
+                    
+                    // Append trash icon to the end of the table column.
+                    newRow += '<td class="rowDelete"><img src="trash.svg" /></td>';
+                    newRow += '</tr>'
+                  });
+                  $("#tableData .thead-light").append(newRow);
+
+                  sessionStorage.setItem(tableName, response);
+                }
+              }
+            })
+        }
                 });
     });
 
@@ -240,16 +245,7 @@
 			        data-click-to-select="true"
 			        data-toolbar="#toolbar"
               class="table table-sm table-hover db-table">
-        <thead class="thead-dark">
-          <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Availability</th>
-            <th>Author</th>
-            <th>Price</th>
-            <th>Operations</th>
-          </tr>
-        </thead>
+            <thead id="colNames" class="thead-dark" ></thead>
         <tbody class="thead-light">
         </tbody>
       </table>
