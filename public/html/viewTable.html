@@ -36,26 +36,47 @@
 
       $("#executeQuery").click(function(e) {
         e.preventDefault();
-        var createTableElem = $("#createTable");
-        console.log(createTableElem.text());
-        //alert(createTableElem.text());
+        var createTableElem = $("#createTable").val();
+        $.ajax({
+          url: `http://localhost:3000/db/table/create`,
+          data: createTableElem,
+          method: "POST",
+          success:function() {
+            $('#alertSuccessMsg').html('<strong>SUCCESS: </strong> Table created successfully. ');
+            $('#alertSuccess').show();
+          }
+        })
       });
       
 
 
-      $('#btnAddRow .btnNewRow').click( function(e){
-        e.preventDefault();
+      $('#btnAddRow').on('click', function(e){
         var tableName = $("#tableSelect option:selected").text();
-        var tableContext = sessionStorage.getItem(tableName);
-
+        var newRowBody = {}, cols='';
+        $("#tableData tbody").find('input[type="text"]').each(function(){
+          var fieldValue = $(this).val();
+          newRowBody[$(this).attr('id')] = fieldValue;
+          $(this).closest("tr").remove();
+          cols += `<td>${fieldValue}</td>`;
+        });
+        cols += '<td><img id="removeRow" class="rowDelete" src="trash.svg" /></td>'
+        $("#tableData tbody").append(`<tr>${cols}</tr>`);
+        
         var urlAddRow = `http://localhost:3000/db/table/${tableName}`
-        console.log(msg);
-        $('alertError').show();
-        $('#alertErrorMsg').text(`<strong>ERROR: </strong> ${msg}`);
-       console.log('btnAddRow clicked.');
-       $.post(urlAddRow, function() {
-         console.log('Row updated successfully!');
-       })
+        $.ajax({
+          url: urlAddRow,
+          data: newRowBody,
+          method: 'POST',
+          success: function () {
+            $('#alertSuccessMsg').html('<strong>SUCCESS: </strong> Row added successfully. ');
+            $('#alertSuccess').show();
+          },
+          error: function(err) {
+            console.error("Error occured while creating a new row. Error Message: ", err);
+          }
+        }) 
+
+
     });
 
       $('#removeRow').click(function(){
@@ -63,17 +84,27 @@
       });
 
       $('#addRow').click(function(){
-        try {
           var tableName = $("#tableSelect option:selected").text();
-          var tableContext = sessionStorage.getItem(tableName);
-          var newRow = $("<tr></tr>");
-          //var cols = "";
-
-          //newRow.append(cols);
-          $("#tableData .thead-light").append(newRow);
-        } catch(err) {
-          console.error('ERROR: ', err);
-        }
+          $.ajax({
+              url: `http://localhost:3000/db/table/${tableName}/colNames`,
+              method: 'GET',
+              success: function (response) {
+                //console.log(response);
+                if (response) {
+                  var col='<tr>';
+                  // Prepare data for Table headers.
+                  response?.table_columns[0]?.forEach((key, index)=> {
+                    var columnName = key['name'].charAt(0).toUpperCase()
+                      + key['name'].slice(1);
+                    col += `<td class="tdNewRow" ><input type="text" id="${columnName.toLowerCase()}" class="form-control" placeholder="${columnName}" ></td>`;
+                  });
+                  col += '<td class="rowNew"> <img id="removeRow" class="rowDelete" src="trash.svg" /></td></tr>';
+                  /*$("#").empty();
+                  $("#colNames").append(col);*/
+                  $("#tableData .thead-light").append(col);
+                }
+              }  
+        });
       });
 
       $("#tableData").on('click','.rowDelete',function(){
@@ -90,12 +121,12 @@
         url: urlDelete,
         method: 'DELETE',
         success: function (response) {
-          $('#alertSuccessMsg').text('<strong>SUCCESS: </strong> Row deleted successfully from the table. ');
-          $('alertError').show();
+          $('#alertSuccessMsg').html('<strong>SUCCESS: </strong> Row deleted successfully from the table. ');
+          $('#alertSuccess').show();
         },
         error: function(err) {
-          $('#alertErrorMsg').text('<strong>ERROR: </strong> Failed to delete row from the table. ');
-          $('alertError').show();
+          $('#alertErrorMsg').html('<strong>ERROR: </strong> Failed to delete row from the table. ');
+          $('#alertError').show();
         }
       });
 
@@ -237,6 +268,25 @@
         <option class="opt"></option>
       </select> <hr/>
 
+      <div>
+        <div>
+          <div id="alertError" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <p id="alertErrorMsg"><strong>ERROR</strong> Row deleted successfully. </p>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </div>
+        <div>
+          <div id="alertSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+            <p id="alertSuccessMsg"><strong>SUCCESS</strong> Row deleted successfully. </p>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <table  id="tableData" 
               data-toggle="table"
               data-search="true"
@@ -256,26 +306,8 @@
             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"></path>
         </svg>
       </button>
+      <button id="btnAddRow" class="btn btn-primary btn-sm btnNewRow">Add Row</button>
     </div>
-
-    <div>
-    <div>
-      <div id="alertError" class="alert alert-warning alert-dismissible fade show" role="alert">
-        <p id="alertErrorMsg"><strong>ERROR</strong> Row deleted successfully. </p>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-    </div>
-    <div>
-      <div id="alertSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
-        <p id="alertSuccessMsg"><strong>SUCCESS</strong> Row deleted successfully. </p>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-    </div>
-  </div>
 
     <div id="divCreate" class="div-create query-execute">
       <div class="row">

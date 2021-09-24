@@ -4,6 +4,7 @@ var db = require("../repo/db");
 var path = require('path');
 
 var Sequelize = require('sequelize');
+const { ok } = require("assert");
 var sequelize = new Sequelize(null, null, '', {
   host: 'localhost',
   dialect: 'sqlite',
@@ -60,74 +61,53 @@ router.post("/table/update/:tableName/:field/:id", function (req, res, next) {
 });
 
 /* Add a new row. */
-router.post("/table/:tableName", function (req, res, next) {
+router.post("/table/:tableName", async function (req, res, next) {
   var tableName = req.params.tableName;
-  var newRowData = req.body;
-  Object.keys(newRowData).forEach( (key, index)=>{
-    console.log(`${key} - ${key[index]}`);
+  var sqlQuery = `INSERT INTO ${tableName} VALUES(`, body = req.body;
+  Object.keys(body).forEach( (key, index)=> {
+    sqlQuery += `'${body[key]}',`;
   });
-  /*
-  var sqlQuery = `INSERT INTO ${tableName} VALUES (${id},${name}, ${availability}, ${author}, ${price});`;
-  var data = [];
+  sqlQuery = sqlQuery.slice(0, -1);
+  sqlQuery += ");";
   console.log("Query: " + sqlQuery);
   
   try {
-    db.run(sqlQuery, data, (err) => {
-      if (err) {
-        console.error(err.message);
-        res.send({'status': 'FAILURE', 'message': 'Row addition failed'})
-      } else {
-        var msg = `Added the row successfully`;
-        res.send({'status': 'SUCCESS', 'message': msg})
-      }
-    });
+    var success = await sequelize.query(sqlQuery);
+    res.send({"status": "SUCCESS", "message": "Row Inserted Successfully"});
   } catch (err) {
     console.error('ERROR: Unable to update table. Check console log');
+    res.send({"status": "FAILURE", "message": "Failed to insert new row. " + err});
   }
-  */
+  
 });
 
 /* create table. */
-router.post("/table/create", function (req, res, next) {
-  var newValue = req.body.sqlQuery;
-  var data = [];
-  console.log("Query: " + sqlQuery);
-  
+router.post("/table/create", async function (req, res, next) {
+  var createTableQuery = req.body.sqlQuery;
+
   try {
-    db.run(sqlQuery, data, (err) => {
-      if (err) {
-        console.error(err.message);
-        res.send({'status': 'FAILURE', 'message': 'Table creation failed'})
-      } else {
-        var msg = `Created table successfully`;
-        res.send({'status': 'SUCCESS', 'message': msg})
-      }
-    });
+    await sequelize.query(createTableQuery);
+    res.send({"status": "SUCCESS", "message":"Table created successfully."});
   } catch (err) {
     console.error('ERROR: Unable to update table. Check console log');
+    res.send({"status": "FAILURE", "message":"Failed to create Table. " + err});
   }
 });
 
 /* delete rows in the table. */
-router.delete("/table/delete/:tableName/:id", function (req, res, next) {
+router.delete("/table/delete/:tableName/:id", async function (req, res, next) {
   var id = req.params.id;
   var tableName = req.params.tableName;
-  var sqlQuery = `DELETE FROM ${tableName} WHERE id=${id}`;
+  var sqlQuery = `DELETE FROM ${tableName} WHERE id='${id}'`;
   var data = [];
   console.log("Query: " + sqlQuery);
   
   try {
-    db.run(sqlQuery, data, (err) => {
-      if (err) {
-        console.error(err.message);
-        res.send({'status': 'FAILURE', 'message': 'Row Deletion failed.'})
-      } else {
-        var msg = `Deleted row with id ${id} successfully`;
-        res.send({'status': 'SUCCESS', 'message': msg})
-      }
-    });
+    await sequelize.query(sqlQuery);
+    res.send({"status": "SUCCESS", "message": "Row Deleted Successfully"});
   } catch (err) {
-    console.error('ERROR: Unable to update table. Check console log');
+    console.error('ERROR: Unable to delete row. Check console log');
+    res.send({"status": "FAILURE", "message": "Failed to delete row. " + err});
   }
 });
 
