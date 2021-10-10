@@ -1,16 +1,8 @@
 var express = require("express");
 var router = express.Router();
 var db = require("../repo/db");
+var sequelize = require("../repo/sequelize");
 var path = require('path');
-
-var Sequelize = require('sequelize');
-const { ok } = require("assert");
-var sequelize = new Sequelize(null, null, '', {
-  host: 'localhost',
-  dialect: 'sqlite',
-  // SQLite database path
-  storage: 'db_view.sqlite'
-});
 /* GET home page. */
 router.get("/json", function (req, res, next) {
 
@@ -111,9 +103,5 @@ router.delete("/table/delete/:tableName/:id", async function (req, res, next) {
   }
 });
 
-/*Getting the column names dynamically 
-router.get("/table/:tableName/colNames", function (req, res) {
-  var tableName = req.params.tableName;
-});*/
 
 module.exports = router;
