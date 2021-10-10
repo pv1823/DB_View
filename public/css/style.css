@@ -1,0 +1,68 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.logo-icon {
+  max-width: 2rem;
+  margin-right: 1rem;
+}
+.nav-block {
+  color:white;
+}
+
+.main-section {
+  margin-top: 6rem;
+}
+
+.div-select {
+  margin-top: 2rem;
+}
+
+#tableSelect {
+  padding: 0.8rem;
+  /* background:rgb(226, 224, 224); */
+}
+
+.query-execute {
+  margin-top: 2rem;
+  color:burlywood;
+}
+
+.execute-btn {
+  margin-top: 2rem;
+}
+
+#alertSuccess {
+  margin-top: 1rem;
+}
+
+#alertError {
+  margin: 2rem;
+  min-width: 3rem;
+}
+
+#alertSuccessMsg {
+  margin-top: 0.5rem;
+}
+
+.rowDelete:hover {
+  cursor: pointer;
+}
+
+.rowNew {
+  cursor: pointer;
+  display: inline-flex;
+}
+
+#btnAddRow {
+  margin-left: 0.5rem;
+  margin-top: 0.1rem;
+}
+.db-table {
+  background-color: rgb(241, 241, 241);
+}

@@ -2,14 +2,14 @@
 <html lang="en">
 
 <head>
-  <title>Table Data</title>
+  <title>DB View App</title>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="bootstrap.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css" crossorigin="anonymous">
   <!-- Optional JavaScript -->
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
   <script src="jquery.min.js" crossorigin="anonymous"></script>
@@ -19,6 +19,121 @@
 
   <script>
     $(document).ready(() => {
+      $('#divSelect').hide();
+      $('#divCreate').hide();
+      $('#alertError').hide();
+      $('#alertSuccess').hide();
+
+      $("#queryTable").click(function() {
+        $('#divCreate').hide();
+        $('#divSelect').show();
+      });
+
+      $("#createTable").click(function() {
+        $('#divSelect').hide();
+        $('#divCreate').show();
+      });
+
+      $("#executeQuery").click(function(e) {
+        e.preventDefault();
+        var createTableElem = $("#createTable").val();
+        $.ajax({
+          url: `http://localhost:3000/db/table/create`,
+          data: createTableElem,
+          method: "POST",
+          success:function() {
+            $('#alertSuccessMsg').html('<strong>SUCCESS: </strong> Table created successfully. ');
+            $('#alertSuccess').show();
+          }
+        })
+      });
+      
+
+
+      $('#btnAddRow').on('click', function(e){
+        var tableName = $("#tableSelect option:selected").text();
+        var newRowBody = {}, cols='';
+        $("#tableData tbody").find('input[type="text"]').each(function(){
+          var fieldValue = $(this).val();
+          newRowBody[$(this).attr('id')] = fieldValue;
+          $(this).closest("tr").remove();
+          cols += `<td>${fieldValue}</td>`;
+        });
+        cols += '<td><img id="removeRow" class="rowDelete" src="trash.svg" /></td>'
+        $("#tableData tbody").append(`<tr>${cols}</tr>`);
+        
+        var urlAddRow = `http://localhost:3000/db/table/${tableName}`
+        $.ajax({
+          url: urlAddRow,
+          data: newRowBody,
+          method: 'POST',
+          success: function () {
+            $('#alertSuccessMsg').html('<strong>SUCCESS: </strong> Row added successfully. ');
+            $('#alertSuccess').show();
+          },
+          error: function(err) {
+            console.error("Error occured while creating a new row. Error Message: ", err);
+          }
+        }) 
+
+
+    });
+
+      $('#removeRow').click(function(){
+        $("#tableData tr:last").remove();
+      });
+
+      $('#addRow').click(function(){
+          var tableName = $("#tableSelect option:selected").text();
+          $.ajax({
+              url: `http://localhost:3000/db/table/${tableName}/colNames`,
+              method: 'GET',
+              success: function (response) {
+                //console.log(response);
+                if (response) {
+                  var col='<tr>';
+                  // Prepare data for Table headers.
+                  response?.table_columns[0]?.forEach((key, index)=> {
+                    var columnName = key['name'].charAt(0).toUpperCase()
+                      + key['name'].slice(1);
+                    col += `<td class="tdNewRow" ><input type="text" id="${columnName.toLowerCase()}" class="form-control" placeholder="${columnName}" ></td>`;
+                  });
+                  col += '<td class="rowNew"> <img id="removeRow" class="rowDelete" src="trash.svg" /></td></tr>';
+                  /*$("#").empty();
+                  $("#colNames").append(col);*/
+                  $("#tableData .thead-light").append(col);
+                }
+              }  
+        });
+      });
+
+      $("#tableData").on('click','.rowDelete',function(){
+        var currentRow=$(this).closest("td");
+        var row = $(this).closest("tr");
+        var rowId =$(this).closest("tr").find('td:first').text().trim();
+        var column = currentRow.attr('id');
+        var value=currentRow.html();
+        var tableName = $( "#tableSelect option:selected" ).text();
+        var urlDelete = `http://localhost:3000/db/table/delete/${tableName}/${rowId}`;
+        console.log("rowDelete - "+ urlDelete);
+
+        $.ajax({
+        url: urlDelete,
+        method: 'DELETE',
+        success: function (response) {
+          $('#alertSuccessMsg').html('<strong>SUCCESS: </strong> Row deleted successfully from the table. ');
+          $('#alertSuccess').show();
+        },
+        error: function(err) {
+          $('#alertErrorMsg').html('<strong>ERROR: </strong> Failed to delete row from the table. ');
+          $('#alertError').show();
+        }
+      });
+
+      row.remove();
+    });
+
+
       $.ajax({
         url: `http://localhost:3000/db/json`,
         method: 'GET',
@@ -36,62 +151,176 @@
         }
       })
 
-      $('#tableSelect').on('change', function(e) {
-          $("#tableData .tbody").empty();
-                    var tableName = $( "#tableSelect option:selected" ).text();
-                    console.log('option selected: ' + tableName);
-                    if (tableName) {
-                      $.ajax({
-                            url: `http://localhost:3000/db/table/${tableName}`,
-                            method: 'GET',
-                            success: function (response) {
-                              if (response.length > 0) {
-                                for (let index = 0; index < response.length; index++) {
-                                  var newRow = $("<tr>");
-                                  var cols = "";
-                                  var id = '';
-                                  var name = '';
-                                  var availabity = '';
-                                  var author = '';
-                                  var price = '';
+      $("#tableData").on('click','.tdClass',function(){
+        var currentRow=$(this).closest("td");
+        var rowId =$(this).closest("tr").find('td:first').text().trim();
+        var column = currentRow.attr('id');
+        var value=currentRow.html();
+        var tableName = $( "#tableSelect option:selected" ).text();
+        //console.log("Table Name: " + tableName);
 
-                                  cols += '<td> ' + response[index].id + '</td>';
-                                  cols += '<td> ' + response[index].name + '</td>';
-                                  cols += '<td> ' + response[index].availabity + '</td>';
-                                  cols += '<td> ' + response[index].author + '</td>';
-                                  cols += '<td> ' + response[index].price + '</td>';
+        var me = currentRow
+        me.hide();
+        me.after(`<input id="tmpInput" style="padding: 0.5rem;" value="${value}">`);
+        $("#tmpInput").focus();
+        $("#tmpInput").bind("keyup", function(e) {
+            e.preventDefault();
+            if (e.keyCode == '13') {
+                var newValue = $(this).val();
+                $(this).remove();
+                if(me.is("input")) {
+                    me.val(newValue);
+                } else {
+                    me.text(newValue);
+                }
+                me.show();
 
-                                  newRow.append(cols);
-                                  $("#tableData .tbody").append(newRow);
-                                }
-                              }
-                            }
-                  })
+                var url = `http://localhost:3000/db/table/update/${tableName}/${column}/${rowId}`;
+                console.log("URL: " + url);
+                
+
+                $.post(url, {"newValue": newValue}, function (response) {
+                        console.log("Updated successfully !")
                     }
+                ); 
+            }
+            return false;
+        });
+
+        $("#tmpInput").blur(function(){
+          var newValue = $(this).val();
+          if (newValue.length == 0 || newValue == value) {
+            $(this).remove();
+            me.show();
+          }
+        });
+
+      });
+
+      $('#tableSelect').on('change', function(e) {
+      $("#tableData .thead-light").empty();
+      var tableName = $( "#tableSelect option:selected" ).text();
+      //console.log('option selected: ' + tableName);
+      if (tableName) {
+        $.ajax({
+              url: `http://localhost:3000/db/table/${tableName}/colNames`,
+              method: 'GET',
+              success: function (response) {
+                //console.log(response);
+                var col='<tr>', newRow = '<tr>';
+                if (response) {
+                  // Prepare data for Table headers.
+                  response?.table_columns[0]?.forEach((key, index)=> {
+                    var columnHeader = key['name'].charAt(0).toUpperCase()
+                      + key['name'].slice(1);
+                    col+= '<th>' +  columnHeader  + '</th>';
+                    //console.log(col);
+                  });
+                  // Append to the table headers.
+                  col += '<th>Operations</th></tr>';
+                  $("#colNames").empty();
+                  $("#colNames").append(col);
+
+                  // Prepare table data.
+                  response?.table_data[0]?.forEach((key, outerIndex)=> {
+                    Object.keys(key).forEach( (innerKey, index)=>{
+                      newRow += `<td class="tdClass" id="${innerKey}">${key[innerKey]}</td>`;
+                    });
+                    
+                    // Append trash icon to the end of the table column.
+                    newRow += '<td class="rowDelete"><img src="trash.svg" /></td>';
+                    newRow += '</tr>'
+                  });
+                  $("#tableData .thead-light").append(newRow);
+
+                  sessionStorage.setItem(tableName, response);
+                }
+              }
+            })
+        }
                 });
-    })
+    });
+
+
   </script>
 </head>
 
 <body>
-  <div class="container container-sm">
-    <select id="tableSelect" class="form-select" aria-label="Default select example">
-      <option class="opt"></option>
-    </select>
-    <br/><br/>
-    <table id="tableData" class="table table-fixed">
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Name</th>
-          <th>Availability</th>
-          <th>Author</th>
-          <th>Price</th>
-        </tr>
-      </thead>
-      <tbody class="tbody">
-      </tbody>
-    </table>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top nav-block">
+    <img class="logo-icon" src="favicon.ico" /><h1>DB View</h1>
+  </nav>
+  <div class="container container-sm main-section">
+    <h3>What would you like to do ? </h3><hr/>
+    <div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="tableOptions" id="queryTable" value="queryTable">
+        <label class="form-check-label" for="queryTable">Query table</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="tableOptions" id="createTable" value="createTable">
+        <label class="form-check-label" for="createTable">Create table</label>
+      </div>
+    </div>
+    
+    <div id="divSelect" class="div-select">
+      Show data for table  
+      <select id="tableSelect" class="form-select" aria-label="Default select example">
+        <option class="opt"></option>
+      </select> <hr/>
+
+      <div>
+        <div>
+          <div id="alertError" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <p id="alertErrorMsg"><strong>ERROR</strong> Row deleted successfully. </p>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </div>
+        <div>
+          <div id="alertSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+            <p id="alertSuccessMsg"><strong>SUCCESS</strong> Row deleted successfully. </p>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <table  id="tableData" 
+              data-toggle="table"
+              data-search="true"
+              data-filter-control="true" 
+              data-show-export="true"
+			        data-click-to-select="true"
+			        data-toolbar="#toolbar"
+              class="table table-sm table-hover db-table">
+            <thead id="colNames" class="thead-dark" ></thead>
+        <tbody class="thead-light">
+        </tbody>
+      </table>
+      <button id="addRow" type="button" class="btn btn-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
+        class="bi bi-plus" 
+        viewBox="0 0 16 16">  
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"></path>
+        </svg>
+      </button>
+      <button id="btnAddRow" class="btn btn-primary btn-sm btnNewRow">Add Row</button>
+    </div>
+
+    <div id="divCreate" class="div-create query-execute">
+      <div class="row">
+        <div class="col-lg">
+          <textarea name="createTable" id="createTable" cols="30" rows="10"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <button 
+          id="executeQuery" 
+          class="btn btn-success execute-btn">Execute</button>
+      </div>
+    </div>
   </div>
 </body>
 
