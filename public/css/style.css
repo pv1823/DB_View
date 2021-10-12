@@ -66,3 +66,8 @@ a {
 .db-table {
   background-color: rgb(241, 241, 241);
 }
+
+.user-menu {
+  position: absolute;
+  right: 7rem;
+}

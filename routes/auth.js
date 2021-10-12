@@ -6,11 +6,11 @@ require('./auth-init')();
 
 /* GET users listing. */
 router.get('/login', function(req, res, next) {
-  res.redirect('/login');
+  res.redirect('/viewTable');
 });
 
 router.post('/login/password', passport.authenticate('local', {
-  successRedirect: '/',
+  successRedirect: '/viewTable',
   failureRedirect: '/login',
   failureMessage: true
 }));
