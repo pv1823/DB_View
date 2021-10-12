@@ -5,12 +5,7 @@ var path = require('path');
 
 var Sequelize = require('sequelize');
 const { ok } = require("assert");
-var sequelize = new Sequelize(null, null, '', {
-  host: 'localhost',
-  dialect: 'sqlite',
-  // SQLite database path
-  storage: 'db_view.sqlite'
-});
+var sequelize = require('./config');
 /* GET home page. */
 router.get("/json", function (req, res, next) {
 

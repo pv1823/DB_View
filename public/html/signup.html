@@ -29,23 +29,23 @@
         <div class="wrapper fadeInDown">
             <div id="formContent">
                 <!-- Tabs Titles -->
-
++
                 <!-- Icon -->
                 <div class="fadeIn first">
                     <img src="favicon.ico" id="icon" alt="DBView Icon" />
-                    <h4>DB View</h4>
+                    <h4>DB View - Sign up</h4>
                 </div>
 
-                <!-- Login Form -->
-                <form action="/login/password" method="post">
-                    <input type="text" id="login" class="fadeIn second" name="login" placeholder="login">
-                    <input type="password" id="password" class="fadeIn third" name="password" placeholder="password">
-                    <input type="submit" class="fadeIn fourth" value="Log In">
-                </form>
+                <!-- Signup Form -->
+                <form action="/users" method="post">
+                    <input type="text" name="name" placeholder="Name">
+                    <input type="text" name="username" placeholder="Username">
+                    <input type="password" name="password" placeholder="Password">
+                    <button type="submit" class="contrast">Sign up</button>
+                  </form>
 
                 <!-- Remind Passowrd -->
                 <div id="formFooter">
-                    <a class="underlineHover" href="/users/new">Sign up !</a>
                 </div>
 
             </div>
