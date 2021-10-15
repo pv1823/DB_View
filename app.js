@@ -4,7 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var passport = require('passport');
-
+require('./routes/auth-init')();
 
 var indexRouter = require('./routes/index');
 var authRouter = require('./routes/auth');
@@ -51,8 +51,8 @@ app.use(function(req, res, next) {
 app.use(passport.initialize());
 app.use(passport.authenticate('session'));
 
-app.use('/', indexRouter);
-app.use('/', authRouter);
+//app.use('/', indexRouter);
+app.use('/', authRouter, indexRouter);
 app.use('/login', loginRouter);
 app.use('/users', usersRouter);
 app.use('/db', dbRouter);
@@ -63,8 +63,9 @@ app.use('/signup', signupRouter);
 
 
 // catch 404 and forward to error handler
+
 app.use(function(req, res, next) {
-  next(createError(404));
+  //next(createError(404));
 });
 
 // error handler

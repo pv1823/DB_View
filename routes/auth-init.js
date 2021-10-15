@@ -13,25 +13,27 @@ module.exports = function() {
   // that the password is correct and then invoke `cb` with a user object, which
   // will be set at `req.user` in route handlers after authentication.
   passport.use(new Strategy(async function(username, password, cb) {
-    var userQuery = `SELECT rowid AS id, * FROM users WHERE username = ${username}`;
-    var user = await sequelize.query(userQuery);
-
-    if (!user) { return cb(null, false, { message: 'Incorrect username or password.' }); }
-      
-    crypto.pbkdf2(password, row.salt, 310000, 32, 'sha256', function(err, hashedPassword) {
+    var userQuery = `SELECT rowid AS id, * FROM users WHERE username = '${username}'`;
+    var userRow = await sequelize.query(userQuery);
+    var user = userRow[0];
+    console.log("User Object at auth-init: " + JSON.stringify(user));
+    if (!user[0]) { return cb(null, false, { message: 'Incorrect username or password.' }); }
+    
+    
+    crypto.pbkdf2(password, user[0].salt, 310000, 32, 'sha256', function(err, hashedPassword) {
     if (err) { return cb(err); }
-    if (!crypto.timingSafeEqual(user.hashed_password, hashedPassword)) {
+    if (!crypto.timingSafeEqual(user[0].hashed_password, hashedPassword)) {
         return cb(null, false, { message: 'Incorrect username or password.' });
     }
-        
-    var user = {
-        id: user.id.toString(),
-        username: user.username,
-        displayName: user.name
+            
+    var userObj = {
+        id: user[0].id.toString(),
+        username: user[0].username,
+        displayName: user[0].name
     };
-        return cb(null, user);
-      });
-  }));
+        return cb(null, userObj);
+  });
+}));
 
 
   // Configure Passport authenticated session persistence.

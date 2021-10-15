@@ -6,7 +6,7 @@ require('./auth-init')();
 
 /* GET users listing. */
 router.get('/login', function(req, res, next) {
-  res.redirect('/viewTable');
+  next();
 });
 
 router.post('/login/password', passport.authenticate('local', {
